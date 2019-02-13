@@ -1,17 +1,21 @@
 function init(){
+    var platforms;
     // configuration to create scene
     var config = {
         type: Phaser.AUTO, 
         width: 800,
         height: 600,
+        physics: {
+            default: 'arcade',
+            gravity: {y: 300},
+            debug: false
+        },
         scene: {
             preload: preload,
             create: create,
             update: update
         }
     };
-
-    var game = new Phaser.Game(config);
 
     function preload ()
     {
@@ -25,13 +29,19 @@ function init(){
     function create ()
     {
         this.add.image(0, 0, 'sky').setOrigin(0, 0); //or use image(400, 300, 'sky') without setorigin
-        this.add.image(400, 300, 'star');
+       
+        platforms = this.physics.add.staticGroup();
+        platforms.create(400, 568, 'platform').setScale(2)/* .refreshBody() */;
+        platforms.create(600, 400, 'platform');
+        platforms.create(50, 250, 'platform');
+        platforms.create(750, 220, 'platform');
     }
     
     function update ()
     {
     }
 
+    var game = new Phaser.Game(config);
 }
 
 $(document).ready(function() {
