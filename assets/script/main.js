@@ -1,6 +1,8 @@
 function init() {
     var platforms;
     var player;
+    var keyClicked;
+    var jumpHeight = 0
     // configuration to create scene
     var config = {
         type: Phaser.AUTO,
@@ -39,9 +41,10 @@ function init() {
         platforms.create(750, 220, 'platform');
 
         //Jack
-        player = this.physics.add.sprite(100, 500, 'jack');
+        player = this.physics.add.sprite(100, 400, 'jack');
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
+        player.body.setGravityY(300);
 
         this.anims.create({
             key: 'left',
@@ -52,7 +55,7 @@ function init() {
 
         this.anims.create({
             key: 'turn',
-            frames: [{ key: 'dude', frame: 4 }],
+            frames: [{ key: 'jack', frame: 4 }],
             frameRate: 20
         });
 
@@ -62,9 +65,42 @@ function init() {
             frameRate: 10,
             repeat: -1
         });
+
+        this.physics.add.collider(player, platforms);
+
+        //keyboard events
+        keyClicked = this.input.keyboard.createCursorKeys();
     }
 
     function update() {
+
+        if (keyClicked.left.isDown) {
+            // console.log('Go left');
+            player.setVelocityX(-100);
+            player.anims.play('left', true); //add animation for left movement
+        } else if (keyClicked.right.isDown) {
+            // console.log('Go right');
+            player.setVelocityX(100);
+            player.anims.play('right', true); //add animation for right movement
+        } else {
+            // console.log('stop');
+            player.setVelocityX(0);
+            player.anims.play('turn'); //to stop and face camera
+        }
+
+        if (keyClicked.space.isDown /*&& player.body.touching.down*/) {
+            jumpHeight++;
+            console.log('jump', jumpHeight);
+            if (jumpHeight <= 25) {
+                player.setVelocityY(-250);
+            }
+            if (player.body.touching.down) {
+                jumpHeight = 0;
+                /**
+                 * use jumpHeight to create jet pack value
+                 */
+            }
+        }
     }
 
     var game = new Phaser.Game(config);
