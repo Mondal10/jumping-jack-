@@ -6,9 +6,13 @@ function init() {
     var keyClicked;
     var playbackMusic;
     var jumpSound;
+    var explodeSound;
+    var starCollectSound;
     var jumpHeight = 0;
     var score = 0;
     var scoreText;
+    var gameOverText;
+    var gameOver = false;
     // configuration to create scene
     var config = {
         type: Phaser.AUTO,
@@ -33,6 +37,8 @@ function init() {
 
         this.load.audio('despacito', '../../../../assets/audio/playback/despacito.mp3');
         this.load.audio('jump', '../../../../assets/audio/misc/jump.wav');
+        this.load.audio('explode', '../../../../assets/audio/misc/Explosion.mp3');
+        this.load.audio('collectStar', '../../../../assets/audio/misc/starCollect.mp3');
 
         // this.sound.setDecodedCallback([jumpSound], this);
 
@@ -58,7 +64,7 @@ function init() {
         platforms.create(600, 400, 'platform');
         platforms.create(50, 250, 'platform');
         platforms.create(750, 220, 'platform');
-        platforms.create(400, 100, 'platform').setScale(0.3, 1).refreshBody();
+        platforms.create(400, 120, 'platform').setScale(0.3, 1).refreshBody();
 
         //Jack
         player = this.physics.add.sprite(100, 400, 'jack');
@@ -84,7 +90,7 @@ function init() {
         bombs = this.physics.add.group({
             key: 'bomb',
             repeat: 4,
-            setXY: { x: 90, y: 50, stepX: 140 }
+            setXY: { x: 50, y: 50, stepX: 140 }
         });
 
         bombs.children.iterate(function (child) {
@@ -132,55 +138,89 @@ function init() {
         playbackMusic = this.sound.add('despacito');
         playbackMusic.volume = 0.5;
         playbackMusic.loop = true;
-        // playbackMusic.play();
+        playbackMusic.play();
 
         // jump sound
         jumpSound = this.sound.add('jump');
         jumpSound.volume = 0.8;
+
+        //Explode sound
+        explodeSound = this.sound.add('explode');
+        explodeSound.volume = 0.8;
+
+        starCollectSound = this.sound.add('collectStar');
+        starCollectSound.volume = 1;
     }
 
     function update() {
 
-        if (keyClicked.left.isDown) {
-            // console.log('Go left');
-            player.setVelocityX(-100);
-            player.anims.play('left', true); //add animation for left movement
-        } else if (keyClicked.right.isDown) {
-            // console.log('Go right');
-            player.setVelocityX(100);
-            player.anims.play('right', true); //add animation for right movement
-        } else {
-            // console.log('stop');
-            player.setVelocityX(0);
-            player.anims.play('turn'); //to stop and face camera
-        }
-
-        if (keyClicked.space.isDown /*&& player.body.touching.down*/) {
-            jumpHeight++;
-            // console.log('jump', jumpHeight);
-            if (jumpHeight <= 20) {
-                player.setVelocityY(-200);
+        if (!gameOver) {
+            if (keyClicked.left.isDown) {
+                // console.log('Go left');
+                player.setVelocityX(-100);
+                player.anims.play('left', true); //add animation for left movement
+            } else if (keyClicked.right.isDown) {
+                // console.log('Go right');
+                player.setVelocityX(100);
+                player.anims.play('right', true); //add animation for right movement
+            } else {
+                // console.log('stop');
+                player.setVelocityX(0);
+                player.anims.play('turn'); //to stop and face camera
             }
-            if (player.body.touching.down) {
-                jumpHeight = 0;
-                jumpSound.play(); //jump sound
-                /**
-                 * use jumpHeight to create jet pack value
-                 */
+
+            if (keyClicked.space.isDown /*&& player.body.touching.down*/) {
+                jumpHeight++;
+                // console.log('jump', jumpHeight);
+                if (jumpHeight <= 20) {
+                    player.setVelocityY(-200);
+                }
+                if (player.body.touching.down) {
+                    jumpHeight = 0;
+                    jumpSound.play(); //jump sound
+                    /**
+                     * use jumpHeight to create jet pack value
+                     */
+                }
             }
         }
     }
 
     function hitBomb(player, bomb) {
 
+        player.setTint(0xff0000);
+        player.anims.play('turn');
+        this.physics.pause();
+        // player.physics.pause();
+        gameOver = true;
+        playbackMusic.pause();
+        explodeSound.play();
+
+        gameOverText = this.add.text(300, 230, 'GAME OVER', { fontSize: '40px', fill: 'red' });
     }
 
     function collectStars(player, star) {
         // console.log("yuhuuu collected");
         star.disableBody(true, true);
-
+        starCollectSound.play();
         score += 10;
         scoreText.setText('Score: ' + score);
+
+        if (stars.countActive(true) === 0) {
+
+            stars.children.iterate(function (child) {
+
+                child.enableBody(true, child.x, 0, true, true);
+
+            });
+
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        }
     }
 
     var game = new Phaser.Game(config);
