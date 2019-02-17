@@ -1,7 +1,10 @@
 function init() {
     var platforms;
     var player;
+    var stars;
     var keyClicked;
+    var playbackMusic;
+    var jumpSound;
     var jumpHeight = 0
     // configuration to create scene
     var config = {
@@ -21,7 +24,20 @@ function init() {
     };
 
     function preload() {
+        /**
+         * Loading audio
+         */
+
+        this.load.audio('despacito', '../../../../assets/audio/playback/despacito.mp3');
+        this.load.audio('jump', '../../../../assets/audio/misc/jump.wav');
+
+        // this.sound.setDecodedCallback([jumpSound], this);
+
+        /**
+         * Loading Images
+         */
         this.load.image('sky', '../../assets/images/sky.png');
+        // this.load.image('wall', '../../assets/images/wall4_1.jpg');
         this.load.image('platform', '../../assets/images/platform.png');
         this.load.image('star', '../../assets/images/star.png');
         this.load.image('bomb', '../../assets/images/bomb.png');
@@ -39,12 +55,27 @@ function init() {
         platforms.create(600, 400, 'platform');
         platforms.create(50, 250, 'platform');
         platforms.create(750, 220, 'platform');
+        platforms.create(400, 100, 'platform').setScale(0.3, 1).refreshBody();
 
         //Jack
         player = this.physics.add.sprite(100, 400, 'jack');
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
         player.body.setGravityY(300);
+
+        //Star
+        stars = this.physics.add.group({
+            key: 'star',
+            repeat: 11,
+            setXY: { x: 12, y: 0, stepX: 70, }
+        });
+
+        stars.children.iterate(function (child) {
+            // console.log(Phaser.Math.FloatBetween(0.4, 0.8));
+            child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.5)); //Add bounce to stars
+            child.body.setGravityY(Math.floor((Math.random() * 10) + 1)); // Adding gravity to the stars or else they would sit at the top
+            child.body.setVelocityY(50); //Falling stars velocity
+        });
 
         this.anims.create({
             key: 'left',
@@ -67,9 +98,22 @@ function init() {
         });
 
         this.physics.add.collider(player, platforms);
+        this.physics.add.collider(stars, platforms);
+
+        this.physics.add.overlap(player, stars, collectStars, null, this);
 
         //keyboard events
         keyClicked = this.input.keyboard.createCursorKeys();
+
+        //Playback Music and looping it
+        playbackMusic = this.sound.add('despacito');
+        playbackMusic.volume = 0.5;
+        playbackMusic.loop = true;
+        // playbackMusic.play();
+
+        // jump sound
+        jumpSound = this.sound.add('jump');
+        jumpSound.volume = 0.8;
     }
 
     function update() {
@@ -90,17 +134,23 @@ function init() {
 
         if (keyClicked.space.isDown /*&& player.body.touching.down*/) {
             jumpHeight++;
-            console.log('jump', jumpHeight);
-            if (jumpHeight <= 25) {
-                player.setVelocityY(-250);
+            // console.log('jump', jumpHeight);
+            if (jumpHeight <= 20) {
+                player.setVelocityY(-200);
             }
             if (player.body.touching.down) {
                 jumpHeight = 0;
+                jumpSound.play(); //jump sound
                 /**
                  * use jumpHeight to create jet pack value
                  */
             }
         }
+    }
+
+    function collectStars(player, star) {
+        // console.log("yuhuuu collected");
+        star.disableBody(true, true);
     }
 
     var game = new Phaser.Game(config);
