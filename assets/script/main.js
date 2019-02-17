@@ -2,10 +2,13 @@ function init() {
     var platforms;
     var player;
     var stars;
+    var bombs;
     var keyClicked;
     var playbackMusic;
     var jumpSound;
-    var jumpHeight = 0
+    var jumpHeight = 0;
+    var score = 0;
+    var scoreText;
     // configuration to create scene
     var config = {
         type: Phaser.AUTO,
@@ -46,7 +49,7 @@ function init() {
 
     function create() {
         //Sky background
-        this.add.image(0, 0, 'sky').setOrigin(0, 0); //or use image(400, 300, 'sky') without setorigin
+        this.add.image(0, 0, 'sky')/*.setScale(0.5)*/.setOrigin(0, 0); //or use image(400, 300, 'sky') without setorigin
         // this.add.image(400, 300, 'star');
 
         //Platform
@@ -67,7 +70,7 @@ function init() {
         stars = this.physics.add.group({
             key: 'star',
             repeat: 11,
-            setXY: { x: 12, y: 0, stepX: 70, }
+            setXY: { x: 12, y: 0, stepX: 70 }
         });
 
         stars.children.iterate(function (child) {
@@ -77,6 +80,23 @@ function init() {
             child.body.setVelocityY(50); //Falling stars velocity
         });
 
+        //Bomb
+        bombs = this.physics.add.group({
+            key: 'bomb',
+            repeat: 4,
+            setXY: { x: 90, y: 50, stepX: 140 }
+        });
+
+        bombs.children.iterate(function (child) {
+            child.setBounceY(0);
+            child.body.setGravityY(Math.floor((Math.random() * 10) + 1));
+            child.body.setVelocityY(100);
+        });
+
+        //Score-Board
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: 'white' });
+
+        //Animate character movement
         this.anims.create({
             key: 'left',
             frames: this.anims.generateFrameNumbers('jack', { start: 0, end: 3 }),
@@ -97,10 +117,13 @@ function init() {
             repeat: -1
         });
 
+        //Collision Detection
         this.physics.add.collider(player, platforms);
         this.physics.add.collider(stars, platforms);
+        this.physics.add.collider(bombs, platforms);
 
         this.physics.add.overlap(player, stars, collectStars, null, this);
+        this.physics.add.collider(player, bombs, hitBomb, null, this);
 
         //keyboard events
         keyClicked = this.input.keyboard.createCursorKeys();
@@ -148,9 +171,16 @@ function init() {
         }
     }
 
+    function hitBomb(player, bomb) {
+
+    }
+
     function collectStars(player, star) {
         // console.log("yuhuuu collected");
         star.disableBody(true, true);
+
+        score += 10;
+        scoreText.setText('Score: ' + score);
     }
 
     var game = new Phaser.Game(config);
@@ -160,4 +190,5 @@ $(document).ready(function () {
     // $div = $('<div></div>').addClass('asdasd').appendTo('body');
     // alert("window is loaded");
     init();
+    // console.clear();
 });
