@@ -1,3 +1,4 @@
+// var isLoaded = false;
 function init() {
     var platforms;
     var player;
@@ -150,6 +151,10 @@ function init() {
 
         starCollectSound = this.sound.add('collectStar');
         starCollectSound.volume = 1;
+
+        $('.loader').fadeOut(500);
+        $('canvas').fadeIn(1000);
+        $('.title').fadeIn(1000);
     }
 
     function update() {
@@ -227,6 +232,11 @@ function init() {
 }
 
 $(document).ready(function () {
+
+    // $('canvas').on('load', function (event) {
+
+    // console.log('document Loaded????????', isLoaded);
+    // });
     // $div = $('<div></div>').addClass('asdasd').appendTo('body');
     // alert("window is loaded");
     init();
