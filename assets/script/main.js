@@ -1,1 +1,226 @@
-function init() { var e, t, a, s, i, o, d, r, l, n, c = 0, h = 0, p = !1, m = { type: Phaser.AUTO, width: 800, height: 600, physics: { default: "arcade", gravity: { y: 300 }, debug: !1 }, scene: { preload: function () { this.load.audio("despacito", "./assets/audio/playback/despacito.mp3"), this.load.audio("jump", "./assets/audio/misc/jump.wav"), this.load.audio("explode", "./assets/audio/misc/Explosion.mp3"), this.load.audio("collectStar", "./assets/audio/misc/starCollect.mp3"), this.load.image("sky", "./assets/images/sky.png"), this.load.image("platform", "./assets/images/platform.png"), this.load.image("star", "./assets/images/star.png"), this.load.image("bomb", "./assets/images/bomb.png"), this.load.spritesheet("jack", "./assets/images/jack.png", { frameWidth: 32, frameHeight: 48 }) }, create: function () { this.add.image(0, 0, "sky").setOrigin(0, 0), (e = this.physics.add.staticGroup()).create(400, 568, "platform").setScale(2).refreshBody(), e.create(600, 400, "platform"), e.create(50, 250, "platform"), e.create(750, 220, "platform"), e.create(400, 120, "platform").setScale(.3, 1).refreshBody(), (t = this.physics.add.sprite(100, 400, "jack")).setBounce(.2), t.setCollideWorldBounds(!0), t.body.setGravityY(300), (a = this.physics.add.group({ key: "star", repeat: 11, setXY: { x: 12, y: 0, stepX: 70 } })).children.iterate(function (e) { e.setBounceY(Phaser.Math.FloatBetween(.2, .5)), e.body.setGravityY(Math.floor(10 * Math.random() + 1)), e.body.setVelocityY(50) }), (s = this.physics.add.group({ key: "bomb", repeat: 4, setXY: { x: 50, y: 50, stepX: 140 } })).children.iterate(function (e) { e.setBounceY(0), e.body.setGravityY(Math.floor(10 * Math.random() + 1)), e.body.setVelocityY(100) }), n = this.add.text(16, 16, "score: 0", { fontSize: "32px", fill: "white" }), this.anims.create({ key: "left", frames: this.anims.generateFrameNumbers("jack", { start: 0, end: 3 }), frameRate: 10, repeat: -1 }), this.anims.create({ key: "turn", frames: [{ key: "jack", frame: 4 }], frameRate: 20 }), this.anims.create({ key: "right", frames: this.anims.generateFrameNumbers("jack", { start: 5, end: 8 }), frameRate: 10, repeat: -1 }), this.physics.add.collider(t, e), this.physics.add.collider(a, e), this.physics.add.collider(s, e), this.physics.add.overlap(t, a, u, null, this), this.physics.add.collider(t, s, y, null, this), i = this.input.keyboard.createCursorKeys(), (o = this.sound.add("despacito")).volume = .5, o.loop = !0, o.play(), (d = this.sound.add("jump")).volume = .8, (r = this.sound.add("explode")).volume = .8, (l = this.sound.add("collectStar")).volume = 1, $(".loader").fadeOut(500), $("canvas").fadeIn(1e3), $(".title").fadeIn(1e3) }, update: function () { p || (i.left.isDown ? (t.setVelocityX(-100), t.anims.play("left", !0)) : i.right.isDown ? (t.setVelocityX(100), t.anims.play("right", !0)) : (t.setVelocityX(0), t.anims.play("turn")), i.space.isDown && (++c <= 20 && t.setVelocityY(-200), t.body.touching.down && (c = 0, d.play()))) } } }; function y(e, t) { e.setTint(16711680), e.anims.play("turn"), this.physics.pause(), p = !0, o.pause(), r.play(), this.add.text(300, 230, "GAME OVER", { fontSize: "40px", fill: "red" }) } function u(e, t) { if (t.disableBody(!0, !0), l.play(), h += 10, n.setText("Score: " + h), 0 === a.countActive(!0)) { a.children.iterate(function (e) { e.enableBody(!0, e.x, 0, !0, !0) }); var i = e.x < 400 ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400), o = s.create(i, 16, "bomb"); o.setBounce(1), o.setCollideWorldBounds(!0), o.setVelocity(Phaser.Math.Between(-200, 200), 20) } } new Phaser.Game(m) } $(document).ready(function () { init(), console.clear() });
+export function init() {
+    var platforms;
+    var player;
+    var stars;
+    var bombs;
+    var keyClicked;
+    var playbackMusic;
+    var jumpSound;
+    var explodeSound;
+    var starCollectSound;
+    var jumpHeight = 0;
+    var score = 0;
+    var scoreText;
+    var gameOverText;
+    var gameOver = false;
+    // configuration to create scene
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            gravity: { y: 300 },
+            debug: false
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    function preload() {
+        /**
+         * Loading audio
+         */
+
+        this.load.audio('despacito', '../../../../assets/audio/playback/despacito.mp3');
+        this.load.audio('jump', '../../../../assets/audio/misc/jump.wav');
+        this.load.audio('explode', '../../../../assets/audio/misc/Explosion.mp3');
+        this.load.audio('collectStar', '../../../../assets/audio/misc/starCollect.mp3');
+
+        // this.sound.setDecodedCallback([jumpSound], this);
+
+        /**
+         * Loading Images
+         */
+        this.load.image('sky', '../../assets/images/sky.png');
+        // this.load.image('wall', '../../assets/images/wall4_1.jpg');
+        this.load.image('platform', '../../assets/images/platform.png');
+        this.load.image('star', '../../assets/images/star.png');
+        this.load.image('bomb', '../../assets/images/bomb.png');
+        this.load.spritesheet('jack', '../../assets/images/jack.png', { frameWidth: 32, frameHeight: 48 });
+    }
+
+    function create() {
+        //Sky background
+        this.add.image(0, 0, 'sky')/*.setScale(0.5)*/.setOrigin(0, 0); //or use image(400, 300, 'sky') without setorigin
+        // this.add.image(400, 300, 'star');
+
+        //Platform
+        platforms = this.physics.add.staticGroup();
+        platforms.create(400, 568, 'platform').setScale(2).refreshBody(); // The call to refreshBody() is required because we have scaled a static physics body, so we have to tell the physics world about the changes we made.
+        platforms.create(600, 400, 'platform');
+        platforms.create(50, 250, 'platform');
+        platforms.create(750, 220, 'platform');
+        platforms.create(400, 120, 'platform').setScale(0.3, 1).refreshBody();
+
+        //Jack
+        player = this.physics.add.sprite(100, 400, 'jack');
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+        player.body.setGravityY(300);
+
+        //Star
+        stars = this.physics.add.group({
+            key: 'star',
+            repeat: 11,
+            setXY: { x: 12, y: 0, stepX: 70 }
+        });
+
+        stars.children.iterate(function (child) {
+            child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.5)); //Add bounce to stars
+            child.body.setGravityY(Math.floor((Math.random() * 10) + 1)); // Adding gravity to the stars or else they would sit at the top
+            child.body.setVelocityY(50); //Falling stars velocity
+        });
+
+        //Bomb
+        bombs = this.physics.add.group({
+            key: 'bomb',
+            repeat: 4,
+            setXY: { x: 50, y: 50, stepX: 140 }
+        });
+
+        bombs.children.iterate(function (child) {
+            child.setBounceY(0);
+            child.body.setGravityY(Math.floor((Math.random() * 10) + 1));
+            child.body.setVelocityY(100);
+        });
+
+        //Score-Board
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: 'white' });
+
+        //Animate character movement
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('jack', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'turn',
+            frames: [{ key: 'jack', frame: 4 }],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('jack', { start: 5, end: 8 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        //Collision Detection
+        this.physics.add.collider(player, platforms);
+        this.physics.add.collider(stars, platforms);
+        this.physics.add.collider(bombs, platforms);
+
+        this.physics.add.overlap(player, stars, collectStars, null, this);
+        this.physics.add.collider(player, bombs, hitBomb, null, this);
+
+        //keyboard events
+        keyClicked = this.input.keyboard.createCursorKeys();
+
+        //Playback Music and looping it
+        playbackMusic = this.sound.add('despacito');
+        playbackMusic.volume = 0.5;
+        playbackMusic.loop = true;
+        playbackMusic.play();
+
+        // jump sound
+        jumpSound = this.sound.add('jump');
+        jumpSound.volume = 0.8;
+
+        //Explode sound
+        explodeSound = this.sound.add('explode');
+        explodeSound.volume = 0.8;
+
+        starCollectSound = this.sound.add('collectStar');
+        starCollectSound.volume = 1;
+
+        // fade out loader
+        $('.loader').fadeOut(500);
+        $('canvas').fadeIn(1000);
+        $('.title').fadeIn(1000);
+    }
+
+    function update() {
+
+        if (!gameOver) {
+            if (keyClicked.left.isDown) {
+                player.setVelocityX(-100);
+                player.anims.play('left', true); //add animation for left movement
+            } else if (keyClicked.right.isDown) {
+                player.setVelocityX(100);
+                player.anims.play('right', true); //add animation for right movement
+            } else {
+                player.setVelocityX(0);
+                player.anims.play('turn'); //to stop and face camera
+            }
+
+            if (keyClicked.space.isDown /*&& player.body.touching.down*/) {
+                jumpHeight++;
+                if (jumpHeight <= 20) {
+                    player.setVelocityY(-200);
+                }
+                if (player.body.touching.down) {
+                    jumpHeight = 0;
+                    jumpSound.play(); //jump sound
+                    /**
+                     * use jumpHeight to create jet pack value
+                     */
+                }
+            }
+        }
+    }
+
+    function hitBomb(player, bomb) {
+
+        player.setTint(0xff0000);
+        player.anims.play('turn');
+        this.physics.pause();
+        // player.physics.pause();
+        gameOver = true;
+        playbackMusic.pause();
+        explodeSound.play();
+
+        gameOverText = this.add.text(300, 230, 'GAME OVER', { fontSize: '40px', fill: 'red' });
+    }
+
+    function collectStars(player, star) {
+        star.disableBody(true, true);
+        starCollectSound.play();
+        score += 10;
+        scoreText.setText('Score: ' + score);
+
+        if (stars.countActive(true) === 0) {
+
+            stars.children.iterate(function (child) {
+
+                child.enableBody(true, child.x, 0, true, true);
+
+            });
+
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        }
+    }
+
+    var game = new Phaser.Game(config);
+}
