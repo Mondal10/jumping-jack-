@@ -7,3 +7,5 @@
 - Dodge the Bombs.
 
 <i>Note: Page might take some time to load the resources.</i>
+
+![jumping-jack](https://raw.githubusercontent.com/Mondal10/jumping-jack-/master/assets/images/jumping-jack.gif)
