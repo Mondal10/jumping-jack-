@@ -35,22 +35,22 @@ export function init() {
          * Loading audio
          */
 
-        this.load.audio('despacito', '../../../../assets/audio/playback/despacito.mp3');
-        this.load.audio('jump', '../../../../assets/audio/misc/jump.wav');
-        this.load.audio('explode', '../../../../assets/audio/misc/Explosion.mp3');
-        this.load.audio('collectStar', '../../../../assets/audio/misc/starCollect.mp3');
+        this.load.audio('despacito', './assets/audio/playback/despacito.mp3');
+        this.load.audio('jump', './assets/audio/misc/jump.wav');
+        this.load.audio('explode', './assets/audio/misc/Explosion.mp3');
+        this.load.audio('collectStar', './assets/audio/misc/starCollect.mp3');
 
         // this.sound.setDecodedCallback([jumpSound], this);
 
         /**
          * Loading Images
          */
-        this.load.image('sky', '../../assets/images/sky.png');
-        // this.load.image('wall', '../../assets/images/wall4_1.jpg');
-        this.load.image('platform', '../../assets/images/platform.png');
-        this.load.image('star', '../../assets/images/star.png');
-        this.load.image('bomb', '../../assets/images/bomb.png');
-        this.load.spritesheet('jack', '../../assets/images/jack.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.image('sky', './assets/images/sky.png');
+        // this.load.image('wall', './assets/images/wall4_1.jpg');
+        this.load.image('platform', './assets/images/platform.png');
+        this.load.image('star', './assets/images/star.png');
+        this.load.image('bomb', './assets/images/bomb.png');
+        this.load.spritesheet('jack', './assets/images/jack.png', { frameWidth: 32, frameHeight: 48 });
     }
 
     function create() {
