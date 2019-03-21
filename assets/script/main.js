@@ -31,6 +31,17 @@ export function init() {
     };
 
     function preload() {
+
+        /**
+        * Loading Images
+        */
+        this.load.image('sky', './assets/images/sky.png');
+        // this.load.image('wall', './assets/images/wall4_1.jpg');
+        this.load.image('platform', './assets/images/platform.png');
+        this.load.image('star', './assets/images/star.png');
+        this.load.image('bomb', './assets/images/bomb.png');
+        this.load.spritesheet('jack', './assets/images/jack.png', { frameWidth: 32, frameHeight: 48 });
+
         /**
          * Loading audio
          */
@@ -42,15 +53,6 @@ export function init() {
 
         // this.sound.setDecodedCallback([jumpSound], this);
 
-        /**
-         * Loading Images
-         */
-        this.load.image('sky', './assets/images/sky.png');
-        // this.load.image('wall', './assets/images/wall4_1.jpg');
-        this.load.image('platform', './assets/images/platform.png');
-        this.load.image('star', './assets/images/star.png');
-        this.load.image('bomb', './assets/images/bomb.png');
-        this.load.spritesheet('jack', './assets/images/jack.png', { frameWidth: 32, frameHeight: 48 });
     }
 
     function create() {
